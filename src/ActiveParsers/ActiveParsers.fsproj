@@ -9,7 +9,9 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Stream.fs" />
+    <Compile Include="Teq.fs" />
     <Compile Include="ActiveParser.fs" />
+    <Compile Include="Extensions.fs" />
     <Compile Include="StatefulParsers.fs" />
     <Compile Include="StringParsers.fs" />
   </ItemGroup>

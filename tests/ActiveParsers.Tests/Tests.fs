@@ -17,6 +17,5 @@ let tests =
 
             }
 
-            let subject = Say.add 1 2
-            Expect.equal subject 3 "Addition works"
+            Expect.equal 3 3 "Addition works"
        ]

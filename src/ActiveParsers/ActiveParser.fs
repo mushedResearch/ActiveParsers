@@ -5,9 +5,10 @@ open System.Collections.Generic
 
 type ActiveParser<'a,'t> = IStream<'t> -> ('a * IStream<'t>) option
 
+
 [<StructuralEquality; StructuralComparison>]
 [<Struct>]
-type private Unfold<'a> = 
+type Unfold<'a> = 
   | Continue 
   | ContinueWith of ContinueWith : 'a
   | Break
@@ -41,6 +42,14 @@ type private Unfold<'a> =
         | Some(x,next) -> ContinueWith(x),next
         | None -> Unfold<'a>.Break,stream
 
+    static member LiftUntil (p1 : ActiveParser<'a,'t>) (p2 : ActiveParser<'a,'t>)  : IStream<'t> -> Unfold<'a> * IStream<'t> =
+      fun stream -> 
+        match p2 stream with
+        | Some(x,next) -> BreakWith(x),next
+        | None ->
+            match p1 stream with
+            | Some(x,next) -> ContinueWith(x),next
+            | None -> Unfold<'a>.Break,stream
 module ParserBuilder =
   [<Sealed>]
   type ParserBuilder() = 
@@ -153,6 +162,10 @@ module Combinators =
         match p1 stream with
         | None -> p2 stream
         | res -> res
+        
+    let inline Map (p: ActiveParser<'a,'t>) (fn: 'a -> 'b) : ActiveParser<'b,'t> =
+        fun stream ->
+            p stream |> Option.map (fun (x,next) -> fn x,next)
 
     let (>>=) = Bind
 
@@ -183,6 +196,7 @@ module Combinators =
     /// Combines (0 or more) applications of parser p  
     let many (p: ActiveParser<'a,'t>) = Unfold<'a>.Unfold (Unfold<'a>.Lift p)
 
+    let until p ptermal = Unfold<'a>.Unfold (Unfold<'a>.LiftUntil p ptermal)
     /// Combines (1 or more) applications of parser p
     let many1 p = cons p (many p)
 
@@ -218,6 +232,13 @@ module Combinators =
       fun stream -> match p stream with Some(_,s) -> Some((),s) | None -> None
 
 
+    let inline maybe (p: ActiveParser<'a,'t>) = 
+      fun stream ->
+          match p stream with
+          | Some(v,s) -> Some(Some(v),s)
+          | None -> Some(None,stream)
+          
+    let (?) = maybe
     //choose, maybe, pipe..., between, followedBy, notFollowedBy, manyTill, skip, skipManyTill, chairr, chainr1 
 
 

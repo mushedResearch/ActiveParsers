@@ -12,3 +12,4 @@ type Reply<'a> =
   }
 
 type StatefulParser<'a,'t> = 'a*IStream<'t> -> Reply<'a>*IStream<'t>
+

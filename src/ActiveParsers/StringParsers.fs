@@ -5,32 +5,32 @@ open Stream
 
 module StringParsers =
     open Combinators
-    type StringParser = ActiveParser<unit,char>
-    let Char (c : char) : ActiveParser<char,char> =
+    type StringParser<'a> = ActiveParser<'a,char>
+    let inline Char (c : char) : StringParser<char> =
       fun stream ->
           match stream.Head() with
           | Some(chr) when chr = c -> Some(chr, stream.Consume(1))
           | _ -> None
     
-    let PChar (c : char) : ActiveParser<unit,char> =
+    let inline PChar (c : char) :  StringParser<unit> =
       fun stream ->
           match stream.Head() with
           | Some(chr) when chr = c -> Some((), stream.Consume(1))
           | _ -> None
 
-    let PString (s : string) : ActiveParser<unit,char> =
+    let inline PString (s : string) : StringParser<unit> =
       fun stream -> 
         match stream.Read(s.Length) with
         | Some(str) when String(str) = s -> Some((),stream.Consume(s.Length))
         | _ -> None
         
-    let String (s : string) : ActiveParser<string,char> =
+    let inline String (s : string) : ActiveParser<string,char> =
       fun stream -> 
         match stream.Read(s.Length) with
         | Some(str) when String(str) = s -> Some(s,stream.Consume(s.Length))
         | _ -> None    
 
-    let SplitWith (s : string) : ActiveParser<char [],char> =
+    let inline SplitWith (s : string) : ActiveParser<char [],char> =
       fun stream ->
         let pos_init = stream.Position()
         match stream.SubSearch ((=),s.ToCharArray()) with
@@ -41,9 +41,9 @@ module StringParsers =
           | None -> Some([||],stream.Consume(s.Length))
         | _ -> None
 
-    let Between (s : string) = PString s >>. SplitWith s
+    let inline Between (s : string) = PString s >>. SplitWith s
     
-    let Range (c1 : char) (c2 : char) : ActiveParser<char,char> =
+    let inline Range (c1 : char) (c2 : char) : ActiveParser<char,char> =
         fun stream ->
           match stream.Head() with
           | Some(chr) when chr >= c1 && chr <= c2 -> Some(chr, stream.Consume(1))

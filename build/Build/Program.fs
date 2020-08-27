@@ -95,69 +95,12 @@ let main argv =
     
     let build = BuildTask.createFn "Build" [clean] (fun _ -> 
         Trace.log "--- Building the app ---"
-        DotNet.build id (serverPath)
+        DotNet.build id (apPath)
     )
     
-    let install = BuildTask.createFn "Setup" [] (fun _ ->
-        Trace.log "--- Create Folders ---"
-        let runDir = (DirectoryInfo.ofPath runPath)
-        if runDir.Exists then
-            Shell.cleanDir runDir.FullName
-        else Shell.mkdir runDir.FullName
-        
-        let configDir = runDir.CreateSubdirectory("config")
-        let binDir = runDir.CreateSubdirectory("bin")
-        
-        Trace.log "--- Copying config ---"
-        Shell.copy (configDir.FullName) (["./vendor/mama.properties"])
-        
-        Trace.log "--- Copying binaries ---"
-        Shell.copy binDir.FullName [
-            "./vendor/dynamic/libapr-1.dll"
-            "./vendor/dynamic/libmamawmwimplmd.dll"
-            "./vendor/dynamic/libcommonenterprisemd.dll"
-            "./vendor/dynamic/libmamacenterprisemd.dll"
-            "./vendor/dynamic/libmamacmd.dll"
-            "./vendor/dynamic/libmamacppenterprisemd.dll"
-            "./vendor/dynamic/libmamacppmd.dll"
-            "./vendor/dynamic/libmamaentnoopmd.dll"
-            "./vendor/dynamic/libmamawcacheimplmd.dll"
-            "./vendor/dynamic/libmamawmsgimplmd.dll"
-            "./vendor/dynamic/libmamawmwimplmd.dll"
-            "./vendor/dynamic/libmamdabookmd.dll"
-            "./vendor/dynamic/libmamdamd.dll"
-            "./vendor/dynamic/libmamdanewsmd.dll"
-            "./vendor/dynamic/libmamdaoptionsmd.dll"
-            "./vendor/dynamic/libwcachemd.dll"
-            "./vendor/dynamic/libwombatcommonmd.dll"
-            "./vendor/dynamic/libwombatmwmd.dll"
+   
+    
 
-        ]
-        Trace.log "--- Setting WOMBAT_PATH (windows only) ---"
-        let result = Shell.Exec("Cmd.exe","/C SETX WOMBAT_PATH \""+configDir.FullName+"\"")
-        Trace.logf "Result:%i\r\n" result
-        
-        
-        //Unnecessary
-        //Environment.setEnvironVar "API_HOME" runDir.FullName
-        //let path = Environment.environVarOrFail "PATH"
-        //Environment.setEnvironVar "PATH" (path+";"+binDir.FullName+";")
-        
-        ()
-        )
-    
-    let testFeed = BuildTask.createFn "TestFeed" [] (fun _ ->
-        Trace.log "--- Building the app ---"
-        DotNet.build id (testFeedPath)
-        
-        Trace.log "--- Copying binaries ---"
-        Shell.copy  ("./Release/bin/") !!(testFeedPath + "/bin/Release/netcoreapp3.1/*")
-        
-        Trace.log "--- Running tests ---"
-        let result = Shell.Exec("./Release/bin/Superfeed.TestFeed.exe","-tport delay_intrinio -S NASDAQ -s GOOG","./Release/bin/")
-        ()
-        )
-    
 //    let watchTest = BuildTask.createFn "WatchTest" [clean; build] (fun _ ->
 //        Trace.log "--- Running tests ---"
 //        Tools.runDotNet "watch test" testPath

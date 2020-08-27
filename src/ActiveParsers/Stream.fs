@@ -11,6 +11,7 @@ type IStream<'t> =
     abstract Search : ('t -> 't -> bool) *'t -> int option
     abstract Length : unit -> int
     abstract Position : unit -> int
+    
 
 [<Struct>]    
 type StreamState<'a> =
